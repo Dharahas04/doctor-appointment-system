@@ -31,6 +31,9 @@ public class User {
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
+        if (isActive == null) {
+            isActive = true;
+        }
     }
 
     // Getters and Setters

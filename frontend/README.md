@@ -1,18 +1,66 @@
-# React + Vite
+# Doctor Appointment Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This Vite app now connects to the Spring Boot backend in the sibling folder:
 
-Currently, two official plugins are available:
+- Frontend: `/Users/saidharahasrao/doctor-appointment-system/frontend`
+- Backend: `/Users/saidharahasrao/doctor-appointment-system/doctor-appointment`
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## What works
 
-## React Compiler
+- Browse specialties and doctors from the live API
+- Filter doctors by specialty and mode
+- Register a patient account with `/api/auth/register`
+- Log in as a patient with `/api/auth/login`
+- View available slots for a selected doctor
+- Reserve a slot temporarily with Redis-backed locking
+- Confirm an appointment with an `Idempotency-Key`
+- View mode-specific notification details after confirmation
+- View appointment history and cancel confirmed appointments
+- Create specialties, doctors, and slots from the admin console
+- Update appointment lifecycle state from the admin console
+- View daily operational metrics from `/api/reports/daily-summary`
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+## Frontend environment
 
-Note: This will impact Vite dev & build performances.
+Create `.env` from `.env.example` if you want to override the backend URL:
 
-## Expanding the ESLint configuration
+```bash
+cp .env.example .env
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Default:
+
+```env
+VITE_API_BASE_URL=http://localhost:8080
+```
+
+## Run locally
+
+1. Start MySQL and Redis locally.
+2. Start the backend:
+
+```bash
+cd /Users/saidharahasrao/doctor-appointment-system/doctor-appointment
+./mvnw spring-boot:run
+```
+
+3. Start the frontend in a second terminal:
+
+```bash
+cd /Users/saidharahasrao/doctor-appointment-system/frontend
+npm install
+npm run dev
+```
+
+4. Open the Vite URL, usually `http://localhost:5173`.
+
+## Demo flow
+
+1. Open `Admin Console`
+2. Create one or more specialties
+3. Add doctors, assign a mode, and set a clinic address if needed
+4. Generate slots for those doctors
+5. Open `Patient Flow`
+6. Register a patient account or log in
+7. Filter doctors, reserve a slot, and confirm the booking
+8. Review notification details, appointment history, and reporting updates

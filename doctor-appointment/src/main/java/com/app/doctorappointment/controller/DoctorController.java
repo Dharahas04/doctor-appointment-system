@@ -21,8 +21,13 @@ public class DoctorController {
     }
 
     @GetMapping
-    public List<Doctor> getAll() {
-        return repo.findAll();
+    public List<Doctor> getAll(@RequestParam(required = false) Long specialtyId,
+            @RequestParam(required = false) String mode) {
+        return repo.findAll().stream()
+                .filter(doctor -> specialtyId == null
+                        || (doctor.getSpecialty() != null && specialtyId.equals(doctor.getSpecialty().getId())))
+                .filter(doctor -> matchesMode(doctor.getMode(), mode))
+                .toList();
     }
 
     @PostMapping
@@ -33,5 +38,18 @@ public class DoctorController {
                             "Specialty " + d.getSpecialty().getId() + " was not found.")));
         }
         return repo.save(d);
+    }
+
+    private boolean matchesMode(String doctorMode, String requestedMode) {
+        if (requestedMode == null || requestedMode.isBlank()) {
+            return true;
+        }
+        if (doctorMode == null || doctorMode.isBlank()) {
+            return false;
+        }
+
+        String normalizedDoctorMode = doctorMode.trim().toUpperCase();
+        String normalizedRequestedMode = requestedMode.trim().toUpperCase();
+        return "BOTH".equals(normalizedDoctorMode) || normalizedDoctorMode.equals(normalizedRequestedMode);
     }
 }

@@ -1,90 +1,152 @@
-import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import { BrowserRouter as Router, Navigate, Route, Routes, useNavigate } from "react-router-dom";
+import AppShell from "./components/layout/AppShell.jsx";
+import ProtectedRoute from "./components/routing/ProtectedRoute.jsx";
+import { usePortalController } from "./hooks/usePortalController.js";
+import AdminConsolePage from "./pages/AdminConsolePage.jsx";
+import AuthPage from "./pages/AuthPage.jsx";
+import PatientDashboardPage from "./pages/PatientDashboardPage.jsx";
 
-// Navbar Component
-function Navbar() {
-  return (
-    <nav style={{ padding: "10px", background: "#f0f0f0" }}>
-      <Link to="/" style={{ marginRight: "10px" }}>Home</Link>
-      <Link to="/doctors" style={{ marginRight: "10px" }}>Doctors</Link>
-      <Link to="/appointment" style={{ marginRight: "10px" }}>Appointment</Link>
-      <Link to="/login" style={{ marginRight: "10px" }}>Login</Link>
-      <Link to="/register">Register</Link>
-    </nav>
-  );
-}
-
-// Pages
-function Home() {
-  return (
-    <div>
-      <h1>Doctor Appointment System</h1>
-      <p>Welcome! Book appointments easily.</p>
-    </div>
-  );
-}
-
-function Login() {
-  return (
-    <div>
-      <h2>Login</h2>
-      <input placeholder="Email" /><br /><br />
-      <input type="password" placeholder="Password" /><br /><br />
-      <button>Login</button>
-    </div>
-  );
-}
-
-function Register() {
-  return (
-    <div>
-      <h2>Register</h2>
-      <input placeholder="Name" /><br /><br />
-      <input placeholder="Email" /><br /><br />
-      <input type="password" placeholder="Password" /><br /><br />
-      <button>Register</button>
-    </div>
-  );
-}
-
-function Doctors() {
-  return (
-    <div>
-      <h2>Doctors List</h2>
-      <ul>
-        <li>Dr. John - Cardiologist</li>
-        <li>Dr. Smith - Dentist</li>
-        <li>Dr. Anna - Dermatologist</li>
-      </ul>
-    </div>
-  );
-}
-
-function Appointment() {
-  return (
-    <div>
-      <h2>Book Appointment</h2>
-      <input type="date" /><br /><br />
-      <input type="time" /><br /><br />
-      <button>Book Appointment</button>
-    </div>
-  );
-}
-
-// Main App
 function App() {
   return (
     <Router>
-      <Navbar />
-      <div style={{ padding: "20px" }}>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/doctors" element={<Doctors />} />
-          <Route path="/appointment" element={<Appointment />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-        </Routes>
-      </div>
+      <AppRoutes />
     </Router>
+  );
+}
+
+function AppRoutes() {
+  const navigate = useNavigate();
+  const controller = usePortalController();
+
+  async function onLogin(event) {
+    const nextPath = await controller.handleLogin(event);
+    if (nextPath) {
+      navigate(nextPath, { replace: true });
+    }
+  }
+
+  async function onRegister(event) {
+    const nextPath = await controller.handleRegister(event);
+    if (nextPath) {
+      navigate(nextPath, { replace: true });
+    }
+  }
+
+  async function onLogout() {
+    await controller.handleLogout();
+    navigate("/auth", { replace: true });
+  }
+
+  return (
+    <Routes>
+      <Route
+        path="/"
+        element={
+          <Navigate to="/auth" replace />
+        }
+      />
+
+      <Route
+        path="/auth"
+        element={
+          <AuthPage
+            authTab={controller.authTab}
+            isSubmittingAuth={controller.isSubmittingAuth}
+            loginForm={controller.loginForm}
+            notice={controller.notice}
+            onLogin={onLogin}
+            onRegister={onRegister}
+            registerForm={controller.registerForm}
+            setAuthTab={controller.setAuthTab}
+            setLoginForm={controller.setLoginForm}
+            setRegisterForm={controller.setRegisterForm}
+          />
+        }
+      />
+
+      <Route
+        element={
+          <ProtectedRoute session={controller.session}>
+            <AppShell notice={controller.notice} onLogout={onLogout} session={controller.session} />
+          </ProtectedRoute>
+        }
+      >
+        <Route
+          path="/patient"
+          element={
+            <ProtectedRoute allowedRoles={["Patient"]} session={controller.session}>
+              <PatientDashboardPage
+                availableDates={controller.availableDates}
+                doctorSearch={controller.doctorSearch}
+                isLoadingAppointments={controller.isLoadingAppointments}
+                isLoadingDoctors={controller.isLoadingDoctors}
+                isLoadingSlots={controller.isLoadingSlots}
+                isSubmittingReservation={controller.isSubmittingReservation}
+                latestReceipt={controller.latestReceipt}
+                onConfirmBooking={controller.handleConfirmBooking}
+                onLogout={onLogout}
+                onReleaseReservation={controller.handleReleaseReservation}
+                onReserve={controller.handleReserve}
+                onUpdateAppointmentStatus={controller.handleUpdateAppointmentStatus}
+                patientAppointments={controller.patientAppointments}
+                reservation={controller.reservation}
+                selectedDoctor={controller.selectedDoctor}
+                selectedMode={controller.selectedMode}
+                selectedSlot={controller.selectedSlot}
+                selectedSlotDate={controller.selectedSlotDate}
+                selectedSpecialtyId={controller.selectedSpecialtyId}
+                session={controller.session}
+                setDoctorSearch={controller.setDoctorSearch}
+                setReservation={controller.setReservation}
+                setSelectedDoctorId={controller.setSelectedDoctorId}
+                setSelectedMode={controller.setSelectedMode}
+                setSelectedSlotDate={controller.setSelectedSlotDate}
+                setSelectedSlotId={controller.setSelectedSlotId}
+                setSelectedSpecialtyId={controller.setSelectedSpecialtyId}
+                slotsForSelectedDate={controller.slotsForSelectedDate}
+                specialties={controller.specialties}
+                stats={controller.stats}
+                visibleDoctors={controller.visibleDoctors}
+              />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute allowedRoles={["Admin"]} session={controller.session}>
+              <AdminConsolePage
+                allAppointments={controller.allAppointments}
+                analytics={controller.analytics}
+                doctorForm={controller.doctorForm}
+                doctors={controller.doctors}
+                isSubmittingAdmin={controller.isSubmittingAdmin}
+                onCreateDoctor={controller.handleCreateDoctor}
+                onCreateSlot={controller.handleCreateSlot}
+                onCreateSpecialty={controller.handleCreateSpecialty}
+                onDoctorFormChange={controller.setDoctorForm}
+                onSlotFormChange={controller.setSlotForm}
+                onSpecialtyFormChange={controller.setSpecialtyForm}
+                onUpdateAppointmentStatus={controller.handleUpdateAppointmentStatus}
+                report={controller.report}
+                slotForm={controller.slotForm}
+                specialties={controller.specialties}
+                specialtyForm={controller.specialtyForm}
+                stats={controller.stats}
+              />
+            </ProtectedRoute>
+          }
+        />
+      </Route>
+
+      <Route
+        path="*"
+        element={
+          <Navigate to="/auth" replace />
+        }
+      />
+    </Routes>
   );
 }
 

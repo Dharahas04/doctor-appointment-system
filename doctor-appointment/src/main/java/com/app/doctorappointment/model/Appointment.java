@@ -2,6 +2,8 @@ package com.app.doctorappointment.model;
 
 import jakarta.persistence.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = { "idempotencyKey" }))
 public class Appointment {
@@ -20,9 +22,18 @@ public class Appointment {
 
     private Long patientId;
 
+    private String mode;
+
     private String status;
 
     private String idempotencyKey;
+
+    private LocalDateTime createdAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+    }
 
     public Long getId() {
         return id;
@@ -48,6 +59,14 @@ public class Appointment {
         return idempotencyKey;
     }
 
+    public String getMode() {
+        return mode;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
     public void setDoctor(Doctor doctor) {
         this.doctor = doctor;
     }
@@ -58,6 +77,10 @@ public class Appointment {
 
     public void setPatientId(Long patientId) {
         this.patientId = patientId;
+    }
+
+    public void setMode(String mode) {
+        this.mode = mode;
     }
 
     public void setStatus(String status) {

@@ -33,13 +33,12 @@ class AppointmentControllerTest {
 
     @Test
     void returnsConflictInsteadOfInternalServerErrorForBusinessErrors() throws Exception {
-        when(appointmentService.book(1L, 101L, "abc123"))
+        when(appointmentService.book(1L, 101L, null))
                 .thenThrow(new AppointmentConflictException("Slot 1 is not available."));
 
         mockMvc.perform(post("/api/appointments")
                         .param("slotId", "1")
-                        .param("patientId", "101")
-                        .header("Idempotency-Key", "abc123"))
+                        .param("patientId", "101"))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.message").value("Slot 1 is not available."))
                 .andExpect(jsonPath("$.path").value("/api/appointments"));

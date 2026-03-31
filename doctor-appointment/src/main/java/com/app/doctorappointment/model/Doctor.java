@@ -11,6 +11,7 @@ public class Doctor {
 
     private String name;
     private String mode;
+    private String clinicAddress;
 
     @ManyToOne
     private Specialty specialty;
@@ -31,6 +32,10 @@ public class Doctor {
         return specialty;
     }
 
+    public String getClinicAddress() {
+        return clinicAddress;
+    }
+
     public void setId(Long id) {
         this.id = id;
     }
@@ -41,6 +46,10 @@ public class Doctor {
 
     public void setMode(String mode) {
         this.mode = mode;
+    }
+
+    public void setClinicAddress(String clinicAddress) {
+        this.clinicAddress = clinicAddress;
     }
 
     public void setSpecialty(Specialty specialty) {

@@ -6,6 +6,7 @@ import com.app.doctorappointment.repository.DoctorRepository;
 import com.app.doctorappointment.repository.SlotRepository;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Comparator;
 import java.util.List;
 
 @RestController
@@ -21,8 +22,22 @@ public class SlotController {
     }
 
     @GetMapping
-    public List<Slot> getAll() {
-        return slotRepository.findAll();
+    public List<Slot> getAll(@RequestParam(required = false) Long doctorId,
+            @RequestParam(required = false) String status) {
+        if (doctorId != null && status != null && !status.isBlank()) {
+            return slotRepository.findByDoctorIdAndStatusIgnoreCaseOrderByStartTimeAsc(doctorId, status.trim());
+        }
+
+        if (doctorId != null) {
+            return slotRepository.findByDoctorIdOrderByStartTimeAsc(doctorId);
+        }
+
+        return slotRepository.findAll().stream()
+                .filter(slot -> status == null
+                        || status.isBlank()
+                        || slot.getStatus() != null && status.equalsIgnoreCase(slot.getStatus()))
+                .sorted(Comparator.comparing(Slot::getStartTime))
+                .toList();
     }
 
     @PostMapping
